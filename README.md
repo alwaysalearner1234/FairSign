@@ -1,5 +1,7 @@
 # FairSign
 
+Demo video : https://youtu.be/GJdQPFhgARk
+
 **Spot the red flags before you sign.**
 
 FairSign reads a job offer, internship letter or freelance contract and tells you, in plain English or Hindi, which clauses could hurt you. It explains the Indian law behind each one, suggests fairer wording, and writes the email asking for changes.
