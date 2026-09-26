@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FairSign</title>
+<meta name="description" content="FairSign finds unfair clauses in job offers, internship letters and freelance contracts, explains them in plain English and Hindi, and drafts the email to fix them. Runs entirely in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="FairSign home">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect x="5" y="2.5" width="20" height="27" rx="3" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"></rect>
+        <path d="M9.5 9.5h11M9.5 14h11" stroke="var(--ink-3)" stroke-width="2" stroke-linecap="round"></path>
+        <path d="M9 18.5h12" stroke="var(--high)" stroke-width="2.4" stroke-linecap="round"></path>
+        <path d="M17.5 24.5l3 3 7-8" fill="none" stroke="var(--accent)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+      <span class="brand-name">FairSign</span>
+    </a>
+    <div class="top-tools">
+      <span class="privacy-chip" title="Your contract is analysed inside this browser tab and never uploaded.">
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 5V3.8a3 3 0 016 0V5M2.5 5h7v5.5h-7z" fill="none" stroke="currentColor" stroke-width="1.4"></path></svg>
+        <span data-i18n="privacy">Stays on your device</span>
+      </span>
+      <div class="seg" role="group" aria-label="Language">
+        <button type="button" id="lang-en" aria-pressed="true">English</button>
+        <button type="button" id="lang-hi" aria-pressed="false" class="t-hi">हिंदी</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1 data-i18n="h1">Spot the red flags before you sign.</h1>
+    <p data-i18n="lede">Paste a job offer, internship letter or freelance contract. FairSign marks the clauses that could hurt you, explains them in plain language, cites the Indian law behind each one, and writes the email asking for fairer terms.</p>
+  </section>
+
+  <section class="panel input-panel" aria-labelledby="input-title">
+    <h2 id="input-title" class="sr-only">Your contract</h2>
+    <div class="input-row">
+      <div class="samples" role="group" aria-label="Sample contracts">
+        <span class="eyebrow" data-i18n="try">Try a sample</span>
+        <!-- sample buttons inserted by app.js -->
+      </div>
+    </div>
+    <div class="drop" id="drop">
+      <label for="contract-input" class="sr-only">Contract text</label>
+      <textarea id="contract-input" spellcheck="false" placeholder="Paste your contract here, or drop a .txt, .docx or .pdf file."></textarea>
+      <div class="drop-hint">
+        <span><span data-i18n="drop">Drop a file here or</span> <button type="button" class="linkish" id="pick-file" data-i18n="choose">choose a file</button> <span class="muted">(.txt, .docx, .pdf)</span></span>
+        <span id="word-count"></span>
+      </div>
+      <input type="file" id="file-input" accept=".txt,.md,.text,.docx,.pdf,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+    </div>
+    <div class="action-row">
+      <div class="role-pick">
+        <label for="role" data-i18n="iam">I am signing as</label>
+        <select id="role">
+          <option value="auto">Detect automatically</option>
+          <option value="employee">Employee</option>
+          <option value="intern">Intern</option>
+          <option value="freelancer">Freelancer / consultant</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <span class="status" id="status" role="status" aria-live="polite"></span>
+        <button type="button" class="btn btn-primary" id="scan">
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="2"></circle><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+          <span data-i18n="scan">Check this contract</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="results" id="results" aria-live="polite" hidden>
+    <div class="panel summary" id="summary"></div>
+
+    <div class="workspace">
+      <div class="sheet-wrap panel">
+        <div class="sheet-head">
+          <span class="eyebrow" data-i18n="yourcontract">Your contract, marked up</span>
+          <div class="legend">
+            <span><i class="l-high"></i><span data-i18n="high">High</span></span>
+            <span><i class="l-medium"></i><span data-i18n="medium">Medium</span></span>
+            <span><i class="l-low"></i><span data-i18n="low">Low</span></span>
+          </div>
+        </div>
+        <div class="sheet" id="sheet" tabindex="0" aria-label="Contract with highlighted clauses"></div>
+      </div>
+
+      <div class="flags">
+        <div class="flag-tools">
+          <h2 style="font-size:19px" data-i18n="flagsTitle">What to push back on</h2>
+          <div class="filter" role="group" aria-label="Filter by priority" id="filter">
+            <button type="button" data-f="all" aria-pressed="true" data-i18n="all">All</button>
+            <button type="button" data-f="high" aria-pressed="false" data-i18n="high">High</button>
+            <button type="button" data-f="medium" aria-pressed="false" data-i18n="medium">Medium</button>
+            <button type="button" data-f="low" aria-pressed="false" data-i18n="low">Low</button>
+          </div>
+        </div>
+        <div id="flag-list" class="flags"></div>
+        <div id="positives"></div>
+      </div>
+    </div>
+
+    <div class="lower">
+      <section class="panel email" aria-labelledby="email-title">
+        <div>
+          <h2 id="email-title" style="font-size:19px" data-i18n="emailTitle">Your negotiation email</h2>
+          <p class="muted" style="margin:4px 0 0;font-size:14px" data-i18n="emailLede">Built from the flags you ticked. Polite, specific, and ready to send to HR or your client.</p>
+        </div>
+        <div class="email-fields">
+          <div class="field"><label for="to-name" data-i18n="toName">Their name</label><input id="to-name" type="text" placeholder="e.g. Ms. Rao"></div>
+          <div class="field"><label for="my-name" data-i18n="myName">Your name</label><input id="my-name" type="text" placeholder="e.g. Asha Kumar"></div>
+        </div>
+        <div class="field">
+          <label for="email-out" class="sr-only">Email draft</label>
+          <textarea id="email-out" spellcheck="true"></textarea>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="btn btn-primary btn-sm" id="copy-email" data-i18n="copyEmail">Copy email</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="copy-report" data-i18n="copyReport">Copy full report</button>
+        </div>
+      </section>
+
+      <div style="display:grid;gap:18px">
+        <section class="panel help" aria-labelledby="help-title">
+          <h2 id="help-title" style="font-size:19px" data-i18n="helpTitle">Free help in India</h2>
+          <ul id="help-list"></ul>
+        </section>
+
+        <section class="panel ai" aria-labelledby="ai-title">
+          <div>
+            <h2 id="ai-title" style="font-size:17px" data-i18n="aiTitle">AI second opinion (optional)</h2>
+            <p class="muted" style="margin:4px 0 0;font-size:13.5px" data-i18n="aiLede">Ask Google Gemini to look for anything the rules missed. This sends the contract text to Google using your own API key, which is kept only in this tab.</p>
+          </div>
+          <div class="ai-row">
+            <div class="field"><label for="ai-key">Gemini API key</label><input id="ai-key" type="password" autocomplete="off" placeholder="AIza…"></div>
+            <div class="field"><label for="ai-model">Model</label><input id="ai-model" type="text" value="gemini-2.5-flash" style="width:150px"></div>
+            <button type="button" class="btn btn-ghost btn-sm" id="ai-run" style="height:38px" data-i18n="aiRun">Ask AI</button>
+          </div>
+          <div class="ai-out" id="ai-out"></div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p style="margin:0"><b>FairSign flags clauses worth asking about. It is not legal advice</b> and does not replace a lawyer. Rules are written for Indian law (Indian Contract Act 1872, Code on Wages 2019, Copyright Act 1957, MSMED Act 2006, DPDP Act 2023, Arbitration Act 1996) and reviewed against public court decisions.</p>
+    <p style="margin:0">Sample contracts are fictional. Built for LexHack 2026.</p>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="samples.js"></script>
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

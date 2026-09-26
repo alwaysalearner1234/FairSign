@@ -1,0 +1,11 @@
+{
+  "name": "fairsign",
+  "version": "1.0.0",
+  "description": "Find unfair clauses in job offers, internship letters and freelance contracts. Plain-language explanations grounded in Indian law. Runs entirely in the browser.",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test",
+    "build:single": "node tools/build-single.js",
+    "start": "python3 -m http.server 8080"
+  }
+}
